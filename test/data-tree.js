@@ -3,6 +3,35 @@ web3,contrct,contrct_address,deploy_coinbase,index_id = "Test-a",
 nodes_container = function(){return [[],[],[],[],[]]},
 nodes_object_container = function(){return [{},{},{},{},{}]},
 tree_nodes = {
+    'a': 18,
+    'b': 0,
+    'c': 7,
+    'd': 11,
+    'e': 16,
+    'f': 3,
+    'g': 16,
+    'h': 17,
+    'i': 17,
+    'j': 18,
+    'k': 12,
+    'l': 3,
+    'm': 4,
+    'n': 6,
+    'o': 11,
+    'p': 5,
+    'q': 12,
+    'r': 1,
+    's': 1,
+    't': 16,
+    'u': 14,
+    'v': 3,
+    'w': 7,
+    'x': 13,
+    'y': 6,
+    'z': 17,
+}
+
+/*tree_nodes = {
     'ae':{
       'a': 18,
       'b': 0,
@@ -34,7 +63,7 @@ tree_nodes = {
       'x': 13,
       'y': 6,
       'z': 17},
-}
+}*/
 
 contract('Data-Tree', function(accounts) {
   deploy_coinbase = accounts[0];
@@ -61,21 +90,18 @@ contract('Data-Tree', function(accounts) {
         contrct.nodeExists.call(index_id,tr)
         .then(function(e1){
           assert.equal(e1,false,"Node e1 exists in Index before insertion");
-          done();
-
         })
          .then(function(a){
-          contrct.insertNode(index_id,sc,tr,tree_nodes[sc][tr])
+          contrct.insertNode(index_id,tr,tree_nodes[tr])
           .then(function(a){
             console.log("Insertion Cost(single node):",a.receipt.gasUsed);
             contrct.nodeExists.call(index_id,tr)
             .then(function(e2){
               assert.equal(e2,true,"Node e2 does not exist in Index after insertion");
-               done();
-               //crossCheck();
+               crossCheck();
             })
           });
-        })/*
+        })
         //Double check presence
         function crossCheck(){
           contrct.nodeExists.call(index_id,tr)
@@ -93,11 +119,10 @@ contract('Data-Tree', function(accounts) {
           done();
         });
       }
-*/
     });
 
 
-  it.skip("Should create batches of new indexes",function(done){
+  it("Should create batches of new indexes",function(done){
       var i = [],final,indexes = Object.keys(tree_nodes);
 
       indexes = indexes.splice(1);//Remove already added index;
@@ -116,12 +141,14 @@ contract('Data-Tree', function(accounts) {
           for(t_a=0;t_a<5;t_a++){
             to_add[t_a] = [indexes[indx+t_a],tree_nodes[indexes[indx+t_a]]];
           }
+          console.log(to_add);
 
-          i[tr] = contrct.insertNodes(index_id,to_add)
+          i[tr] = contrct.insertNodeBatch(index_id,to_add)
           .then(function(a){
             console.log("Insertion cost:",a.receipt.gasUsed);
-            contrct.nodeExists.call(index_id,tr)
+            contrct.nodeExists.call(index_id,tr,{gas:4000000})
             .then(function(e2){
+              console.log("Check",tr,e2);
               assert.equal(e2,true,"Node e2 does not exist in Index after insertion");
             })
             if(!(indx+5<indexes.length))crossCheck();
@@ -185,17 +212,21 @@ contract('Data-Tree', function(accounts) {
     })
 
 
-      it.skip("Should fetch all nodes on the Index",function(done){
-        var nodes = [],last_node=0x0;
+      it("Should fetch all nodes on the Index",function(done){
+        var nodes = [],index,last_node=0x0;
         contrct.getIndex.call(index_id)
-        .then(function(index){
-          size = Number(index[2]);
+        .then(function(idx){
+          index = idx;
+
+          console.log("IDX:",index)
 
           function fetchNode(){
           contrct.getNodesBatch.call(index_id,last_node)
           .then(function(nodes_batch){
+            console.log("Batch:",nodes_batch);
+            done();
               var all=new nodes_object_container,l=0,
-              titles = ['id','left','rigt','data'];
+              titles = ['id','left','rigt','parent','data'];
               nodes_batch.forEach(function(r){
 
                 var rn=0;
@@ -208,7 +239,7 @@ contract('Data-Tree', function(accounts) {
                 nodes = nodes.concat(all);
 
             last_node=nodes[nodes.length-1].id;
-            if(last_node==web3.toHex(0x0) || !(nodes.length<size)){
+            if(last_node==web3.toHex(0x0) && index.last == nodes[nodes.length-1].parent){
               console.log(nodes);
               done();
             }
