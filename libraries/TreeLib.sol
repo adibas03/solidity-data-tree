@@ -111,8 +111,8 @@ library TreeLib{
          results[0][r]= sector.children[last_node_id].id;
          results[1][r]= sector.children[last_node_id].left;
          results[2][r]= sector.children[last_node_id].right;
-         results[2][r]= sector.children[last_node_id].parent;
-         results[3][r]= sector.children[last_node_id].data;
+         results[3][r]= sector.children[last_node_id].parent;
+         results[4][r]= sector.children[last_node_id].data;
          r++;
 
          if(sector.children[last_node_id].right == 0x0){
