@@ -199,7 +199,9 @@ contract Tree{
         bytes32 right = 0x0;
         bytes32 left = 0x0;
         if(d==0){
-          left = getSection(section_id).last;
+          TreeLib.Section storage sector = getSection(section_id);
+          left = sector.last;
+          sector.children[left].right = node_id;
         }
         else{
           left = data[d-1][0];
