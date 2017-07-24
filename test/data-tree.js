@@ -218,36 +218,50 @@ contract('Data-Tree', function(accounts) {
         var nodes = [],index,last_node=0x0;
         contrct.getIndex.call(index_id)
         .then(function(idx){
-          index = idx;
+          index = new index_object(idx);
 
-          console.log("IDX:",index)
+          console.log("IDX:",index);
 
           function fetchNode(){
           contrct.getNodesBatch.call(index_id,last_node)
           .then(function(nodes_batch){
-            console.log("Batch:",nodes_batch);
-            done();
-              var all=new nodes_object_container,l=0,
-              titles = ['id','left','rigt','parent','data'];
-              nodes_batch.forEach(function(r){
+            console.log('fetching...');
 
+              var all=new nodes_object_container,l=0,
+              titles = Object.keys(new node_object),
+              skips=[];
+              nodes_batch.forEach(function(r){
                 var rn=0;
                 r.forEach(function(c){
+                  if(l==0 && c == padHex(0)){
+                    skips.push(rn);
+                  }
+                  if(skips.indexOf(rn)>-1){
+                    if(all[rn])
+                    delete(all[rn]);
+                    rn++;
+                    return;
+                  }
+
                   all[rn][titles[l]] = c;
                   rn++;
                 });
                 l++;
               });
-                nodes = nodes.concat(all);
 
-            last_node=nodes[nodes.length-1].id;
-            if(last_node==web3.toHex(0x0) && index.last == nodes[nodes.length-1].parent){
+              all.forEach(function(e){
+                nodes.push(e);
+              })
+
+              last_node=nodes[nodes.length-1].id;
+
+            if((last_node==padHex(0) || nodes[nodes.length-1].right==padHex(0))  && (index.last == nodes[nodes.length-1].parent || nodes[nodes.length-1].parent==padHex(0x0))){
               console.log(nodes);
               done();
             }
             else fetchNode();
           });
-          }
+        }
 
          fetchNode();
         })
