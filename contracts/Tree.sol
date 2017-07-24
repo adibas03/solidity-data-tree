@@ -88,7 +88,7 @@ contract Tree{
         return TreeLib.getNode(getSection(getParent(node_id)),node_id);
     }
 
-    function getNodesBatch(bytes32 index_id,bytes32 last_node_id) constant returns (bytes32[5][5]) {
+    function getNodesBatch(bytes32 index_id,bytes32 last_node_id) constant returns (bytes32[5][5] results) {
           TreeLib.Index storage index = indexes[index_id];
 
           //throw if empty
@@ -98,7 +98,31 @@ contract Tree{
           else last_node_id = index.children[getParent(last_node_id)].children[last_node_id].right;
 
           bytes32 section_id = getParent(last_node_id);
-          return TreeLib.getNodesBatch(index,section_id,last_node_id);
+          TreeLib.Section storage sector = index.children[section_id];
+
+          uint r = 0;
+
+          while(r<5 && last_node_id!=0x0){
+           results[0][r]= sector.children[last_node_id].id;
+           results[1][r]= sector.children[last_node_id].left;
+           results[2][r]= sector.children[last_node_id].right;
+           results[3][r]= sector.children[last_node_id].parent;
+           results[4][r]= sector.children[last_node_id].data;
+           r++;
+
+           if(sector.children[last_node_id].right == 0x0){
+             if(sector.right != 0x0){
+               sector = index.children[sector.right];
+               last_node_id = sector.root;
+               continue;
+             }
+           break;
+           }
+           else {
+             last_node_id = sector.children[last_node_id].right;}
+          }
+
+          return results;
     }
 
     function generateSection() returns (bytes32 section_id){

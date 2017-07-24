@@ -99,36 +99,6 @@ library TreeLib{
         return (sector.children[node_id].id,sector.children[node_id].left,sector.children[node_id].right,sector.children[node_id].parent,sector.children[node_id].data);
     }
 
-    function getNodesBatch(Index storage index,bytes32 section_id,bytes32 last_node_id) constant returns (bytes32[5][5] results){
-        /*should match array form of getNode return*/
-
-        //Choose node to begin fetching from
-        Section storage sector = index.children[section_id];
-
-        uint r = 0;
-        
-        while(r<5 && last_node_id!=0x0){
-         results[0][r]= sector.children[last_node_id].id;
-         results[1][r]= sector.children[last_node_id].left;
-         results[2][r]= sector.children[last_node_id].right;
-         results[3][r]= sector.children[last_node_id].parent;
-         results[4][r]= sector.children[last_node_id].data;
-         r++;
-
-         if(sector.children[last_node_id].right == 0x0){
-           if(sector.right != 0x0){
-             sector = index.children[sector.right];
-             last_node_id = sector.root;
-             continue;
-           }
-         break;
-         }
-         else {
-           last_node_id = sector.children[last_node_id].right;}
-
-        }
-    }
-
     function newIndex(bytes32 index_id,uint maxsize) internal returns(Index memory) {
         return Index(2,0,maxsize,index_id,0x0,0x0); //Update "2" to match ltype index for structure
     }
@@ -175,9 +145,6 @@ library TreeLib{
 
         if(sector.size < 1){
             sector.root = node_id;
-        }
-        else if(left == 0x0){
-            sector.children[sector.last].right = node_id;
         }
 
         sector.children[node_id] = newNode(node_id,left,right,sector.id,data);
