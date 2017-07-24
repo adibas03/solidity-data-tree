@@ -1,7 +1,9 @@
 var Tree = artifacts.require("./Tree.sol"),
 web3,contrct,contrct_address,deploy_coinbase,index_id = "Test-a",
+node_object = function(n){n=n||new Array(5);return {id:n[0],left:n[1],right:n[2],parent:n[3],data:n[4]}},
 nodes_container = function(){return [[],[],[],[],[]]},
 nodes_object_container = function(){return [{},{},{},{},{}]},
+index_object = function(a){a=a||new Array(6);return {mtype:Number(a[0]),size:Number(a[1]),maxsize:Number(a[2]),id:a[3],root:a[4],last:a[5]}},
 tree_nodes = {
     'a': 18,
     'b': 0,
@@ -67,13 +69,14 @@ tree_nodes = {
 
 contract('Data-Tree', function(accounts) {
   deploy_coinbase = accounts[0];
+  function padHex(a){return web3.utils.padRight(web3.utils.toHex(a),66)}
 
 
   it("should deploy Tree Contract", function() {
     var tree = Tree.deployed();
     return tree.then(function(instance) {
       contrct = instance;
-      web3 = instance.constructor.web3
+      web3 = instance.constructor.web3;
       web3.utils = web3._extend.utils;
       contrct_address = instance.address;
 
@@ -148,7 +151,6 @@ contract('Data-Tree', function(accounts) {
             console.log("Insertion cost:",a.receipt.gasUsed);
             contrct.nodeExists.call(index_id,tr,{gas:4000000})
             .then(function(e2){
-              console.log("Check",tr,e2);
               assert.equal(e2,true,"Node e2 does not exist in Index after insertion");
             })
             if(!(indx+5<indexes.length))crossCheck();
