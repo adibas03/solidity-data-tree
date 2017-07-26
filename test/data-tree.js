@@ -1,5 +1,6 @@
 var Tree = artifacts.require("./Tree.sol"),
-web3,contrct,contrct_address,deploy_coinbase,index_id = "Test-a",
+web3,contrct,contrct_address,deploy_coinbase,deleted,
+index_id = "Test-a",
 node_object = function(n){n=n||new Array(5);return {id:n[0],left:n[1],right:n[2],parent:n[3],data:n[4]}},
 nodes_container = function(){return [[],[],[],[],[]]},
 nodes_object_container = function(){return [{},{},{},{},{}]},
@@ -190,11 +191,12 @@ contract('Data-Tree', function(accounts) {
 
         });
 
-    it.skip("Should remove a random Index",function(){
+    it("Should remove a random Index",function(){
 
         var keys = Object.keys(tree_nodes),
         node_id = keys[Math.floor(keys.length*Math.random())];
         console.log("Chosen Node:",node_id);
+        deleted == node_id;
 
         return contrct.nodeExists.call(index_id,node_id).
         then(function(r1){
@@ -214,58 +216,79 @@ contract('Data-Tree', function(accounts) {
     })
 
 
-      it("Should fetch all nodes on the Index",function(done){
-        var nodes = [],index,last_node=0x0;
-        contrct.getIndex.call(index_id)
-        .then(function(idx){
-          index = new index_object(idx);
+    it("Should fetch a random node from the Index",function(){
 
-          console.log("IDX:",index);
-
-          function fetchNode(){
-          contrct.getNodesBatch.call(index_id,last_node)
-          .then(function(nodes_batch){
-            console.log('fetching...');
-
-              var all=new nodes_object_container,l=0,
-              titles = Object.keys(new node_object),
-              skips=[];
-              nodes_batch.forEach(function(r){
-                var rn=0;
-                r.forEach(function(c){
-                  if(l==0 && c == padHex(0)){
-                    skips.push(rn);
-                  }
-                  if(skips.indexOf(rn)>-1){
-                    if(all[rn])
-                    delete(all[rn]);
-                    rn++;
-                    return;
-                  }
-
-                  all[rn][titles[l]] = c;
-                  rn++;
-                });
-                l++;
-              });
-
-              all.forEach(function(e){
-                nodes.push(e);
-              })
-
-              last_node=nodes[nodes.length-1].id;
-
-            if((last_node==padHex(0) || nodes[nodes.length-1].right==padHex(0))  && (index.last == nodes[nodes.length-1].parent || nodes[nodes.length-1].parent==padHex(0x0))){
-              console.log(nodes);
-              done();
-            }
-            else fetchNode();
-          });
-        }
-
-         fetchNode();
+      var keys = Object.keys(tree_nodes),
+      node_id = keys[Math.floor(keys.length*Math.random())];
+      console.log("Chosen Node(Fetch):",node_id);
+      return contrct.nodeExists.call(index_id,node_id)
+      .then(function(e){
+        if(node_id == deleted)
+        assert.equal(false,e,"Deleted node should not exist");
+        else
+          assert.equal(true,e,"Inserted node does not exist");
+      })
+      .then(function(){
+        contrct.getNode.call(node_id)
+        .then(function(f){
+          console.log(f,web3.fromAscii(node_id));
+          //assert.equal(true,e,"Inserted node does not exist");
         })
       })
 
+    });
+
+    it("Should fetch all nodes on the Index",function(done){
+      var nodes = [],index,last_node=0x0;
+      contrct.getIndex.call(index_id)
+      .then(function(idx){
+        index = new index_object(idx);
+
+        console.log("IDX:",index);
+
+        function fetchNode(){
+        contrct.getNodesBatch.call(index_id,last_node)
+        .then(function(nodes_batch){
+          console.log('fetching...');
+          //console.log(nodes_batch)
+
+            var all=new nodes_object_container,l=0,
+            titles = Object.keys(new node_object),
+            skips=[];
+            nodes_batch.forEach(function(r){
+              var rn=0;
+              r.forEach(function(c){
+                if(l==0 && c == padHex(0)){
+                  skips.push(rn);
+                }
+                if(skips.indexOf(rn)>-1){
+                  if(all[rn])
+                  delete(all[rn]);
+                  rn++;
+                  return;
+                }
+
+                all[rn][titles[l]] = c;
+                rn++;
+              });
+              l++;
+            });
+
+            all.forEach(function(e){
+              nodes.push(e);
+            })
+
+            last_node=nodes[nodes.length-1].id;
+
+          if((last_node==padHex(0) || nodes[nodes.length-1].right==padHex(0))  && (index.last == nodes[nodes.length-1].parent || nodes[nodes.length-1].parent==padHex(0x0))){
+            console.log(nodes);
+            done();
+          }
+          else fetchNode();
+        });
+        }
+         fetchNode();
+        })
+      })
 
     });
