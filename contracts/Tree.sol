@@ -125,6 +125,25 @@ contract Tree{
           return results;
     }
 
+    function removeSection(bytes32 index_id,bytes32 section_id) idNotEmpty(section_id){
+      assert(getParent(section_id) == index_id);
+      TreeLib.Index storage index = indexes[index_id];
+      delete(parent_child_lookup[section_id]);
+      TreeLib.removeSection(index,section_id);
+    }
+
+    function removeNode(bytes32 index_id,bytes32 node_id) idNotEmpty(node_id){
+      bytes32 section_id = getParent(node_id);
+      assert(getParent(section_id) == index_id);
+      TreeLib.Section storage sector = getSection(section_id);
+
+      delete(parent_child_lookup[node_id]);
+      TreeLib.removeNode(sector,node_id);
+
+      if(sector.size == 0)
+      removeSection(index_id,section_id);
+    }
+
     function generateSection() returns (bytes32 section_id){
       uint i = 0;
       while(childExists(sha3(block.difficulty+i,block.number+i,block.timestamp+1))){
