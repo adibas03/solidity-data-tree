@@ -210,32 +210,26 @@ contract('Data-Tree', function(accounts) {
             contrct.nodeExists.call(node_id)
             .then(function(r3){
               assert.equal(r3,false,"Node still exists after removal");
+              done();
           })
         })
       });
     })
 
 
-    it("Should fetch a random node from the Index",function(){
+    it("Should fetch a random node from the Index",function(done){
 
       var keys = Object.keys(tree_nodes),
       node_id = keys[Math.floor(keys.length*Math.random())];
       console.log("Chosen Node(Fetch):",node_id);
-      return contrct.nodeExists.call(index_id,node_id)
+      contrct.nodeExists.call(index_id,node_id)
       .then(function(e){
         if(node_id == deleted)
         assert.equal(false,e,"Deleted node should not exist");
         else
           assert.equal(true,e,"Inserted node does not exist");
+        done();
       })
-      .then(function(){
-        contrct.getNode.call(node_id)
-        .then(function(f){
-          console.log(f,web3.fromAscii(node_id));
-          //assert.equal(true,e,"Inserted node does not exist");
-        })
-      })
-
     });
 
     it("Should fetch all nodes on the Index",function(done){
@@ -250,7 +244,6 @@ contract('Data-Tree', function(accounts) {
         contrct.getNodesBatch.call(index_id,last_node)
         .then(function(nodes_batch){
           console.log('fetching...');
-          //console.log(nodes_batch)
 
             var all=new nodes_object_container,l=0,
             titles = Object.keys(new node_object),
@@ -279,12 +272,21 @@ contract('Data-Tree', function(accounts) {
             })
 
             last_node=nodes[nodes.length-1].id;
+            console.log(nodes_batch,all,last_node)
+        })
+        .then(function(){
+              //  console.log(nodes[nodes.length-1],last_node,
+              //  (last_node==padHex(0) || nodes[nodes.length-1].right==padHex(0))  && (index.last == nodes[nodes.length-1].parent || nodes[nodes.length-1].parent==padHex(0x0))
+              //)
+              //console.log(nodes[nodes.length-1],last_node, last_node==padHex(0), nodes[nodes.length-1].right==padHex(0), index.last == nodes[nodes.length-1].parent, nodes[nodes.length-1].parent==padHex(0))
 
-          if((last_node==padHex(0) || nodes[nodes.length-1].right==padHex(0))  && (index.last == nodes[nodes.length-1].parent || nodes[nodes.length-1].parent==padHex(0x0))){
-            console.log(nodes);
-            done();
-          }
-          else fetchNode();
+              console.log(nodes[nodes.length-1])
+              console.log((last_node==padHex(0) || nodes[nodes.length-1].right==padHex(0))  && (index.last == nodes[nodes.length-1].parent || nodes[nodes.length-1].parent==padHex(0)))
+              if((last_node==padHex(0) || nodes[nodes.length-1].right==padHex(0))  && (index.last == nodes[nodes.length-1].parent || nodes[nodes.length-1].parent==padHex(0))){
+                console.log(nodes);
+                done();
+              }
+              else fetchNode();
         });
         }
          fetchNode();
