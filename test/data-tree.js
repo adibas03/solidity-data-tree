@@ -130,7 +130,6 @@ contract('Data-Tree', function(accounts) {
       var i = [],final,indexes = Object.keys(tree_nodes);
 
       indexes = indexes.splice(1);//Remove already added index;
-      //delete(indexes[0]);
 
       for(ind=0;ind<indexes.length;ind+=5){
         //Check if first in batch already exists
@@ -191,14 +190,14 @@ contract('Data-Tree', function(accounts) {
 
         });
 
-    it("Should remove a random Index",function(){
+    it("Should remove a random Index",function(done){
 
         var keys = Object.keys(tree_nodes),
         node_id = keys[Math.floor(keys.length*Math.random())];
-        console.log("Chosen Node:",node_id);
+        console.log("Chosen Node:",node_id,padHex(node_id));
         deleted == node_id;
 
-        return contrct.nodeExists.call(index_id,node_id).
+        contrct.nodeExists.call(index_id,node_id).
         then(function(r1){
 
           assert.equal(r1,true,"Node does not exist for removal");
@@ -272,16 +271,9 @@ contract('Data-Tree', function(accounts) {
             })
 
             last_node=nodes[nodes.length-1].id;
-            console.log(nodes_batch,all,last_node)
         })
         .then(function(){
-              //  console.log(nodes[nodes.length-1],last_node,
-              //  (last_node==padHex(0) || nodes[nodes.length-1].right==padHex(0))  && (index.last == nodes[nodes.length-1].parent || nodes[nodes.length-1].parent==padHex(0x0))
-              //)
-              //console.log(nodes[nodes.length-1],last_node, last_node==padHex(0), nodes[nodes.length-1].right==padHex(0), index.last == nodes[nodes.length-1].parent, nodes[nodes.length-1].parent==padHex(0))
-
-              console.log(nodes[nodes.length-1])
-              console.log((last_node==padHex(0) || nodes[nodes.length-1].right==padHex(0))  && (index.last == nodes[nodes.length-1].parent || nodes[nodes.length-1].parent==padHex(0)))
+              //console.log((last_node==padHex(0) || nodes[nodes.length-1].right==padHex(0))  && (index.last == nodes[nodes.length-1].parent || nodes[nodes.length-1].parent==padHex(0)))
               if((last_node==padHex(0) || nodes[nodes.length-1].right==padHex(0))  && (index.last == nodes[nodes.length-1].parent || nodes[nodes.length-1].parent==padHex(0))){
                 console.log(nodes);
                 done();
