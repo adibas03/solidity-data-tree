@@ -208,7 +208,7 @@ contract Tree{
         continue;
 
         //Generate new sector if exceeded
-        if(to_fill < d){
+        if(to_fill < d+1){
           section_id = nextSection(index_id);
           if(section_id == 0x0)
             section_id = insertSection(index_id);
