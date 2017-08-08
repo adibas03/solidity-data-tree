@@ -99,17 +99,18 @@ library TreeLib{
         return (sector.children[node_id].id,sector.children[node_id].left,sector.children[node_id].right,sector.children[node_id].parent,sector.children[node_id].data);
     }
 
-    function removeSection(Index storage index,bytes32 section_id){
+    function removeSection(Index storage index,bytes32 section_id) internal {
       require(index.children[section_id].id == section_id);
-      Section sector = index.children[section_id];
-      if(sector.left != 0x0)
+      Section storage sector = index.children[section_id];
+
       index.children[sector.left].right = sector.right;
-      else
+      if(index.root == section_id)
       index.root = sector.right;
-      if(sector.right != 0x0)
+
       index.children[sector.right].left = sector.left;
-      else
+      if(index.last == section_id)
       index.last = sector.left;
+
       delete(index.children[section_id]);
       if(index.size>0)
       index.size--;
@@ -117,15 +118,16 @@ library TreeLib{
 
     function removeNode(Section storage sector,bytes32 node_id){
       require(sector.children[node_id].id == node_id);
-      Node node = sector.children[node_id];
-      if(node.left != 0x0)
+      Node storage node = sector.children[node_id];
+
       sector.children[node.left].right = node.right;
-      else
+      if(sector.root == node_id)
       sector.root = node.right;
-      if(node.right != 0x0)
+
       sector.children[node.right].left = node.left;
-      else
+      if(sector.last == node_id)
       sector.last = node.left;
+
       delete(sector.children[node_id]);
       if(sector.size>0)
       sector.size--;
