@@ -12,7 +12,6 @@ contract Tree{
     bytes8[3] mtypes = [ bytes8("Node"), bytes8("Section"), bytes8("Index")]; //Increase type to match structure types
     enum ltypes {Node,Section,Index} //Increase type to match structure types
 
-
     uint parent_max_size = 10; //Max size for all parents equaling Max nodes = parent_max_size^(max_depth-1)
 
     function TreeContract(){
@@ -125,7 +124,7 @@ contract Tree{
           return results;
     }
 
-    function removeSection(bytes32 index_id,bytes32 section_id) idNotEmpty(section_id){
+    function removeSection(bytes32 index_id,bytes32 section_id) internal idNotEmpty(section_id){
       assert(getParent(section_id) == index_id);
       TreeLib.Index storage index = indexes[index_id];
       delete(parent_child_lookup[section_id]);
@@ -144,7 +143,7 @@ contract Tree{
       removeSection(index_id,section_id);
     }
 
-    function generateSection() returns (bytes32 section_id){
+    function generateSection() internal constant returns (bytes32 section_id){
       uint i = 0;
       while(childExists(sha3(block.difficulty+i,block.number+i,block.timestamp+1))){
         i++;
@@ -152,11 +151,11 @@ contract Tree{
       return sha3(block.difficulty+i,block.number+i,block.timestamp+1);
     }
 
-    function newIndex(bytes32 index_id)idNotEmpty(index_id){
+    function newIndex(bytes32 index_id) internal idNotEmpty(index_id){
         indexes[index_id] = TreeLib.newIndex(index_id,parent_max_size);
     }
 
-    function insertSection(bytes32 parent_id) returns(bytes32){
+    function insertSection(bytes32 parent_id) internal returns(bytes32){
         //Create new index, if it does not exist
         if(!indexExists(parent_id))
           newIndex(parent_id);
